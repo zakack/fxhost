@@ -1,0 +1,21 @@
+[Unit]
+Description=fxhost live FX chain (Scarlett mic -> headphones + fx-mic)
+After=pipewire.service wireplumber.service graphical-session.target
+Wants=pipewire.service wireplumber.service
+# Plugin editors open on the desktop, so live and die with the graphical session.
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/fxhost --config %h/.config/fxhost/chain.json
+Restart=on-failure
+RestartSec=3s
+# Signal only fxhost on stop; it shuts its plugins down and saves state itself.
+# The default (whole cgroup) kills the yabridge/Wine hosts mid-process -> abort.
+# Leftovers (wineserver, WavesLocalServer) get SIGKILL once fxhost has exited.
+KillMode=mixed
+# Waves/yabridge plugins can take a while to shut down and save state.
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=graphical-session.target
